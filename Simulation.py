@@ -23,12 +23,13 @@ walleye_population_params = {
     "class_reproduction_rates": [0, 0, 0, 0, 0.4, 0.4, 0.4, 0.4, 0.2, 0.2, 0.1, 0],
     "number_eggs": [0, 0, 0, 0, 50000, 50000, 50000, 50000, 30000, 20000, 10000, 0],
     "recruitment_age": 4,
-    "egg_survival_rate": 0.0001,
+    "egg_survival_rate": 0.00025,
     "egg_survival_to_recruit_rate": 0.00005
 }
 
 simulation_params = {
-    "num_time_steps": 15
+    "num_time_steps": 15,
+    "is_fishing": True
 }
 class Simulation:
 
@@ -48,7 +49,13 @@ class Simulation:
         return sim_results
 
     def step(self, x):
-        return self.projection_matrix @ x
+        nt = self.projection_matrix @ x
+
+        if self.simulation_params["is_fishing"]:
+            # apply fishing mortality
+            nt = nt - np.array(self.population_params["fishing_mortality"]) * nt
+
+        return nt
 
     def build_projection_matrix(self):
 
@@ -94,7 +101,12 @@ class Recruited_population_simmulation:
         return matrix_D
     
     def step(self, N_t_r, N_t_1):
-        return self.ind_introduction_matrix @ N_t_r + self.transition_matrix @ N_t_1
+        nt = self.ind_introduction_matrix @ N_t_r + self.transition_matrix @ N_t_1
+
+        # apply fishing mortality
+        if self.simulation_params["is_fishing"]:
+            nt = nt - np.array(self.population_params["fishing_mortality"][self.population_params["recruitment_age"]:]) * nt
+        return nt
     
     def plot(self, sim_results):
         plt.plot(sim_results)
@@ -109,11 +121,11 @@ class Recruited_population_simmulation:
         # vecteur qui gardera les résultats de la simulation
         sim_results = np.zeros((self.simulation_params["num_time_steps"], self.population_params["num_age_classes"] - self.population_params["recruitment_age"]))
 
-        # Pour la simulation de la population recrutée, on a besoin de générer N_0 jusqu'à N_t-r
+        # Pour la simulation de la population recrutée, on a besoin de générer N_0 jusqu'à N_t-r initialement
         # on le fait avec la simulation classique
 
         # generate N_0 to N_t-r
-        classic_simulation = Simulation(self.population_params, {"num_time_steps": self.population_params["recruitment_age"]})
+        classic_simulation = Simulation(self.population_params, {"num_time_steps": self.population_params["recruitment_age"], "is_fishing": False})
         classic_simulation_results = classic_simulation.run()
 
         # keep just recruited population
