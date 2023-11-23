@@ -71,8 +71,9 @@ class Simulation:
     def plot(self, sim_results):
         plt.plot(sim_results)
         plt.legend(range(1, self.population_params["num_age_classes"] + 1))
-        plt.xlabel("Time Step")
-        plt.ylabel("Population")
+        plt.title("Évolution de la population de doré jaune pendant 15 ans")
+        plt.xlabel("Année")
+        plt.ylabel("Nombre de poissons")
         plt.show()
 
 
@@ -112,8 +113,9 @@ class Recruited_population_simmulation:
         plt.plot(sim_results)
         #plt.legend("Age Class: " + str(i + self.population_params["recruitment_age"]) for i in range(self.population_params["num_age_classes"] - self.population_params["recruitment_age"]))
         plt.legend(range(self.population_params["recruitment_age"], self.population_params["num_age_classes"] + 1))
-        plt.xlabel("Time Step")
-        plt.ylabel("Population")
+        plt.title("Évolution de la population recruté de doré jaune pendant 15 ans")
+        plt.xlabel("Année")
+        plt.ylabel("Nombre de poissons")
         plt.show()
 
     def run(self):
